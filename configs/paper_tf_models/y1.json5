@@ -1,0 +1,58 @@
+//Generated automatically, by generate_configs.py
+{
+  string_templates: [
+    {
+      key: "data_dir",
+      value: "data",
+    },
+    {
+      key: "meshes_dir",
+      value: "{data_dir}/shapenet_meshes",
+    },
+    {
+      key: "paper_tf_models_dir",
+      value: "{data_dir}/paper_tf_models",
+    },
+    {
+      key: "output_dir",
+      value: "output/paper_tf_models",
+    },
+  ],
+  eval_config: {
+    name: "full_eval",
+    data: {
+      datasets: [
+        {
+          dataset_path: "{data_dir}/single.test/dataset.choy_classes.json",
+          meshes_dir: "{meshes_dir}",
+          high_realism: false,
+          shuffle: "ONCE",
+          data_fraction: 1.0,
+        },
+      ],
+      shuffle: "ONCE",
+      data_loader: {
+        num_data_workers: 6,
+        batch_size: 8,
+        prefetch_factor: 2,
+      },
+      voxelization_config: {
+        task_type: "FG_BG",
+        resolution: {
+          depth: 128,
+          height: 128,
+          width: 128,
+        },
+        sub_grid_sampling: false,
+        conservative_rasterization: false,
+        voxelization_image_resolution_multiplier: 4,
+        voxelization_projection_depth_multiplier: 1,
+      },
+    },
+    num_qualitative_results: 40,
+    num_qualitative_results_in_tensor_board: 0,
+  },
+  frozen_graph_path: "{paper_tf_models_dir}/y1.pb",
+  output_path: "{output_dir}/y1",
+  $schema: "../schemas/tf_model_eval_config.json",
+}

@@ -1,0 +1,292 @@
+{
+  "$schema": "http://json-schema.org/draft-06/schema#",
+  "definitions": {
+    "DataLoaderConfig": {
+      "description": "Configures the data loader.",
+      "properties": {
+        "batch_size": {
+          "default": 4,
+          "type": "integer"
+        },
+        "num_data_workers": {
+          "default": 6,
+          "type": "integer"
+        },
+        "prefetch_factor": {
+          "default": 2,
+          "type": "integer"
+        }
+      },
+      "type": "object"
+    },
+    "DataPipeline": {
+      "description": "Configures the data processing pipeline.",
+      "properties": {
+        "data_loader": {
+          "$ref": "#/definitions/DataLoaderConfig"
+        },
+        "datasets": {
+          "items": {
+            "$ref": "#/definitions/Dataset"
+          },
+          "type": "array"
+        },
+        "shuffle": {
+          "enum": [
+            "PER_EPOCH",
+            "ONCE",
+            "NEVER"
+          ],
+          "type": "string"
+        },
+        "voxelization_config": {
+          "$ref": "#/definitions/VoxelizationConfig"
+        }
+      },
+      "required": [
+        "datasets",
+        "shuffle",
+        "data_loader",
+        "voxelization_config"
+      ],
+      "type": "object"
+    },
+    "Dataset": {
+      "description": "Dataset specification.",
+      "properties": {
+        "data_fraction": {
+          "default": 1.0,
+          "type": "number"
+        },
+        "dataset_path": {
+          "type": "string"
+        },
+        "high_realism": {
+          "default": true,
+          "type": "boolean"
+        },
+        "meshes_dir": {
+          "type": "string"
+        },
+        "shuffle": {
+          "default": "NEVER",
+          "enum": [
+            "PER_EPOCH",
+            "ONCE",
+            "NEVER"
+          ],
+          "type": "string"
+        }
+      },
+      "required": [
+        "dataset_path",
+        "meshes_dir"
+      ],
+      "type": "object"
+    },
+    "EvalConfig": {
+      "description": "Configures an evaluation run",
+      "properties": {
+        "data": {
+          "$ref": "#/definitions/DataPipeline"
+        },
+        "name": {
+          "type": "string"
+        },
+        "num_qualitative_results": {
+          "default": 40,
+          "type": "integer"
+        },
+        "num_qualitative_results_in_tensor_board": {
+          "default": 4,
+          "type": "integer"
+        }
+      },
+      "required": [
+        "name",
+        "data"
+      ],
+      "type": "object"
+    },
+    "RecurrentEvalConfig": {
+      "description": "Recurrent evaluation during training.\n\n  Attempts to evaluate after global step `start_step + K * interval` and before\n  the next one. Note however that evaluation happens only between training\n  iterations and the step size is the product of the train batch_size and the\n  number of training GPUs. Thus, there is no guarantee that evals will run at\n  the exact schedule above. However, any evals that should have ran inside a\n  training iteration will be ran at the end of it.\n  ",
+      "properties": {
+        "config": {
+          "$ref": "#/definitions/EvalConfig"
+        },
+        "interval": {
+          "type": "integer"
+        },
+        "persistent_checkpoint": {
+          "type": "boolean"
+        },
+        "start_step": {
+          "type": "integer"
+        }
+      },
+      "required": [
+        "start_step",
+        "interval",
+        "persistent_checkpoint",
+        "config"
+      ],
+      "type": "object"
+    },
+    "Resolution": {
+      "description": "Voxel grid resolution.",
+      "properties": {
+        "depth": {
+          "type": "integer"
+        },
+        "height": {
+          "type": "integer"
+        },
+        "width": {
+          "type": "integer"
+        }
+      },
+      "required": [
+        "depth",
+        "height",
+        "width"
+      ],
+      "type": "object"
+    },
+    "StringTemplate": {
+      "description": "Defines a string substitution template argument with a default value. ",
+      "properties": {
+        "key": {
+          "type": "string"
+        },
+        "value": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "key",
+        "value"
+      ],
+      "type": "object"
+    },
+    "TrainConfig": {
+      "description": "Configures training.",
+      "properties": {
+        "adam_epsilon": {
+          "default": 0.0001,
+          "type": "number"
+        },
+        "checkpoint_interval": {
+          "default": 16000,
+          "type": "integer"
+        },
+        "data": {
+          "$ref": "#/definitions/DataPipeline"
+        },
+        "initial_learning_rate": {
+          "default": 0.01,
+          "type": "number"
+        },
+        "last_upscale_factor": {
+          "default": 2,
+          "type": "integer"
+        },
+        "latent_channels": {
+          "default": 64,
+          "type": "integer"
+        },
+        "max_steps": {
+          "default": -1,
+          "type": "integer"
+        },
+        "persistent_checkpoint_interval": {
+          "default": 100000,
+          "type": "integer"
+        },
+        "random_grid_offset": {
+          "default": true,
+          "type": "boolean"
+        },
+        "resnet50_imagenet_checkpoint": {
+          "type": "string"
+        },
+        "skip_fraction": {
+          "default": 0.75,
+          "type": "number"
+        },
+        "tensorboard_log_interval": {
+          "default": 1600,
+          "type": "integer"
+        }
+      },
+      "required": [
+        "data",
+        "resnet50_imagenet_checkpoint"
+      ],
+      "type": "object"
+    },
+    "VoxelizationConfig": {
+      "description": "Controls the point sampling of the scene volume.\n\n  Sampling happens through voxelization, followed by flood filling of isolated\n  empty inner regions. The center points of voxels that end up being full are\n  considered full themselves, the rest are declared empty/void. This is an\n  approximation of true point sampling. \"Full\" voxel centers with an adjacent\n  empty voxel might in reality be \"empty\". And small holes in the mesh, with\n  diameter comparable to the voxel side can be ignored/closed.\n\n  We perform both voxelization and flood filling on the GPU. For the former, we\n  use a method similar to\n  https://developer.nvidia.com/content/basics-gpu-voxelization\n  For the latter -- a CUDA implementation of connected components on for a\n  regular grid graph.\n\n  Higher resolutions reduce the approximation error but at the cost of cubic\n  memory growth. We offer a mechanism to reduce the approximation error at a\n  cost of constant increase of the memory (factor ~8), by voxelizing into a\n  non-regular grid (see voxelization.voxelize_mesh for more detail).\n  ",
+      "properties": {
+        "conservative_rasterization": {
+          "default": true,
+          "type": "boolean"
+        },
+        "resolution": {
+          "$ref": "#/definitions/Resolution"
+        },
+        "sub_grid_sampling": {
+          "default": false,
+          "type": "boolean"
+        },
+        "task_type": {
+          "enum": [
+            "FG_BG",
+            "SEMANTIC"
+          ],
+          "type": "string"
+        },
+        "voxelization_image_resolution_multiplier": {
+          "default": 5,
+          "type": "integer"
+        },
+        "voxelization_projection_depth_multiplier": {
+          "default": 1,
+          "type": "integer"
+        }
+      },
+      "required": [
+        "task_type",
+        "resolution"
+      ],
+      "type": "object"
+    }
+  },
+  "description": "TrainPipeline(string_templates: List[corenet.configuration.StringTemplate], train: corenet.configuration.TrainConfig, eval: List[corenet.configuration.RecurrentEvalConfig], output_path: str)",
+  "properties": {
+    "eval": {
+      "items": {
+        "$ref": "#/definitions/RecurrentEvalConfig"
+      },
+      "type": "array"
+    },
+    "output_path": {
+      "type": "string"
+    },
+    "string_templates": {
+      "items": {
+        "$ref": "#/definitions/StringTemplate"
+      },
+      "type": "array"
+    },
+    "train": {
+      "$ref": "#/definitions/TrainConfig"
+    }
+  },
+  "required": [
+    "string_templates",
+    "train",
+    "eval",
+    "output_path"
+  ],
+  "type": "object"
+}

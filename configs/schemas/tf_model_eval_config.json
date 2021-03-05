@@ -1,0 +1,209 @@
+{
+  "$schema": "http://json-schema.org/draft-06/schema#",
+  "definitions": {
+    "DataLoaderConfig": {
+      "description": "Configures the data loader.",
+      "properties": {
+        "batch_size": {
+          "default": 4,
+          "type": "integer"
+        },
+        "num_data_workers": {
+          "default": 6,
+          "type": "integer"
+        },
+        "prefetch_factor": {
+          "default": 2,
+          "type": "integer"
+        }
+      },
+      "type": "object"
+    },
+    "DataPipeline": {
+      "description": "Configures the data processing pipeline.",
+      "properties": {
+        "data_loader": {
+          "$ref": "#/definitions/DataLoaderConfig"
+        },
+        "datasets": {
+          "items": {
+            "$ref": "#/definitions/Dataset"
+          },
+          "type": "array"
+        },
+        "shuffle": {
+          "enum": [
+            "PER_EPOCH",
+            "ONCE",
+            "NEVER"
+          ],
+          "type": "string"
+        },
+        "voxelization_config": {
+          "$ref": "#/definitions/VoxelizationConfig"
+        }
+      },
+      "required": [
+        "datasets",
+        "shuffle",
+        "data_loader",
+        "voxelization_config"
+      ],
+      "type": "object"
+    },
+    "Dataset": {
+      "description": "Dataset specification.",
+      "properties": {
+        "data_fraction": {
+          "default": 1.0,
+          "type": "number"
+        },
+        "dataset_path": {
+          "type": "string"
+        },
+        "high_realism": {
+          "default": true,
+          "type": "boolean"
+        },
+        "meshes_dir": {
+          "type": "string"
+        },
+        "shuffle": {
+          "default": "NEVER",
+          "enum": [
+            "PER_EPOCH",
+            "ONCE",
+            "NEVER"
+          ],
+          "type": "string"
+        }
+      },
+      "required": [
+        "dataset_path",
+        "meshes_dir"
+      ],
+      "type": "object"
+    },
+    "EvalConfig": {
+      "description": "Configures an evaluation run",
+      "properties": {
+        "data": {
+          "$ref": "#/definitions/DataPipeline"
+        },
+        "name": {
+          "type": "string"
+        },
+        "num_qualitative_results": {
+          "default": 40,
+          "type": "integer"
+        },
+        "num_qualitative_results_in_tensor_board": {
+          "default": 4,
+          "type": "integer"
+        }
+      },
+      "required": [
+        "name",
+        "data"
+      ],
+      "type": "object"
+    },
+    "Resolution": {
+      "description": "Voxel grid resolution.",
+      "properties": {
+        "depth": {
+          "type": "integer"
+        },
+        "height": {
+          "type": "integer"
+        },
+        "width": {
+          "type": "integer"
+        }
+      },
+      "required": [
+        "depth",
+        "height",
+        "width"
+      ],
+      "type": "object"
+    },
+    "StringTemplate": {
+      "description": "Defines a string substitution template argument with a default value. ",
+      "properties": {
+        "key": {
+          "type": "string"
+        },
+        "value": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "key",
+        "value"
+      ],
+      "type": "object"
+    },
+    "VoxelizationConfig": {
+      "description": "Controls the point sampling of the scene volume.\n\n  Sampling happens through voxelization, followed by flood filling of isolated\n  empty inner regions. The center points of voxels that end up being full are\n  considered full themselves, the rest are declared empty/void. This is an\n  approximation of true point sampling. \"Full\" voxel centers with an adjacent\n  empty voxel might in reality be \"empty\". And small holes in the mesh, with\n  diameter comparable to the voxel side can be ignored/closed.\n\n  We perform both voxelization and flood filling on the GPU. For the former, we\n  use a method similar to\n  https://developer.nvidia.com/content/basics-gpu-voxelization\n  For the latter -- a CUDA implementation of connected components on for a\n  regular grid graph.\n\n  Higher resolutions reduce the approximation error but at the cost of cubic\n  memory growth. We offer a mechanism to reduce the approximation error at a\n  cost of constant increase of the memory (factor ~8), by voxelizing into a\n  non-regular grid (see voxelization.voxelize_mesh for more detail).\n  ",
+      "properties": {
+        "conservative_rasterization": {
+          "default": true,
+          "type": "boolean"
+        },
+        "resolution": {
+          "$ref": "#/definitions/Resolution"
+        },
+        "sub_grid_sampling": {
+          "default": false,
+          "type": "boolean"
+        },
+        "task_type": {
+          "enum": [
+            "FG_BG",
+            "SEMANTIC"
+          ],
+          "type": "string"
+        },
+        "voxelization_image_resolution_multiplier": {
+          "default": 5,
+          "type": "integer"
+        },
+        "voxelization_projection_depth_multiplier": {
+          "default": 1,
+          "type": "integer"
+        }
+      },
+      "required": [
+        "task_type",
+        "resolution"
+      ],
+      "type": "object"
+    }
+  },
+  "description": "TfModelEvalPipeline(string_templates: List[corenet.configuration.StringTemplate], eval_config: corenet.configuration.EvalConfig, frozen_graph_path: str, output_path: str)",
+  "properties": {
+    "eval_config": {
+      "$ref": "#/definitions/EvalConfig"
+    },
+    "frozen_graph_path": {
+      "type": "string"
+    },
+    "output_path": {
+      "type": "string"
+    },
+    "string_templates": {
+      "items": {
+        "$ref": "#/definitions/StringTemplate"
+      },
+      "type": "array"
+    }
+  },
+  "required": [
+    "string_templates",
+    "eval_config",
+    "frozen_graph_path",
+    "output_path"
+  ],
+  "type": "object"
+}

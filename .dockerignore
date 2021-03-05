@@ -1,0 +1,6 @@
+src/corenet/cc/**
+**/__pycache__
+**/*.pyc
+!src/corenet/cc/*.cc
+!src/corenet/cc/*.cu
+!src/corenet/cc/*.py

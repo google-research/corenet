@@ -1,0 +1,41 @@
+{
+  "$schema": "http://json-schema.org/draft-06/schema#",
+  "definitions": {
+    "DatasetClass": {
+      "description": "DatasetClass(id: str, human_readable: str)",
+      "properties": {
+        "human_readable": {
+          "type": "string"
+        },
+        "id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "human_readable"
+      ],
+      "type": "object"
+    }
+  },
+  "description": "DatasetConfig(classes: List[corenet.data.dataset.DatasetClass], files: List[str])",
+  "properties": {
+    "classes": {
+      "items": {
+        "$ref": "#/definitions/DatasetClass"
+      },
+      "type": "array"
+    },
+    "files": {
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    }
+  },
+  "required": [
+    "classes",
+    "files"
+  ],
+  "type": "object"
+}

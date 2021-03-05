@@ -1,0 +1,8 @@
+/venv_38/
+/out/
+/output/
+/data/
+/.ipynb_checkpoints/
+/src/corenet/cc/cmake-build-*
+/src/corenet/cc/local_config.cmake
+__pycache__
