@@ -59,8 +59,8 @@ virtual environment.
 ```bash
 # Clone CoReNet
 mkdir -p ~/prj/corenet
-cd ~/prj/corenet2
-git clone https://github.com/google/corenet.git .
+cd ~/prj/corenet
+git clone https://github.com/google-research/corenet.git .
 
 # Setup a python virtual environment
 python3.8 -m virtualenv --python=/usr/bin/python3.8 venv_38
