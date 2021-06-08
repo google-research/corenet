@@ -255,6 +255,10 @@ The table below summarizes the number of scenes in each dataset
 | val | 127286 | 45600 | 11400 |
 | test | 246498 | 91194 | 22798 |
 
+
+### Data format and transformations.
+Please see [this](doc/data_format_and_coordinate_systems.md) document.
+
 ### Licenses
 The code and the checkpoints are released under the 
 [Apache 2.0 License](https://www.apache.org/licenses/LICENSE-2.0). The datasets,
