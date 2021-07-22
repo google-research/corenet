@@ -61,7 +61,6 @@ void emit_quad(vec3 center, vec3 dy, vec3 dx) {
     for (int i = 0; i < 4; i++) {
         position = (center + vertices[i]);
         gl_Position = view_projection_matrix * vec4(position, 1);
-        if (gl_Position.w < 0) gl_Position = -gl_Position;
         EmitVertex();
     }
     EndPrimitive();

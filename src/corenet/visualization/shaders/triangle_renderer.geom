@@ -135,7 +135,6 @@ void main() {
     vec3 positions[3] = {v0, v1, v2};
     for (int i = 0; i < 3; i++) {
         gl_Position = view_projection_matrix * vec4(positions[i], 1);
-        if (gl_Position.w < 0) gl_Position = -gl_Position;
         position = positions[i];
         normal = has_normals ? get_normal(i) : geometric_normal;
         texcoord = has_texcoords ? get_texcoord(i) : vec2(0.0);
