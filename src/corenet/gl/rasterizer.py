@@ -183,8 +183,8 @@ class _EglRenderer:
             t.float32: ("f4", np.float32)
         }[inp.output_type]
 
-        render_buffer = self._gl_context.renderbuffer((w, h), components=4,
-                                                      samples=0, dtype="f1")
+        render_buffer = self._gl_context.renderbuffer(
+            (w, h), components=4, samples=0, dtype=gl_dtype)
         objects_to_delete.append(render_buffer)
         depth_buffer = self._gl_context.depth_renderbuffer((w, h), samples=0)
         objects_to_delete.append(depth_buffer)
