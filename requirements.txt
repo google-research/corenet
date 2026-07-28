@@ -5,7 +5,7 @@ jsonschema==3.2.0
 moderngl==5.6.0
 pandas==1.0.3
 Pillow==7.1.2
-ray==1.0.1
+ray==2.56.0
 scikit-image==0.17.2
 tensorboard==2.4.0
 tensorflow-gpu==2.3.1
